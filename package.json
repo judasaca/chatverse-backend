@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
+    "prisma": "prisma",
     "eslint": "eslint",
     "dev": "ts-node-dev src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,6 +23,7 @@
     "eslint-plugin-n": "^16.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "prettier": "^3.0.3",
+    "prisma": "^5.3.1",
     "ts-node-dev": "2.0.0",
     "typescript": "^5.2.2"
   },
