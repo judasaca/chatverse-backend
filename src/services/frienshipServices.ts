@@ -24,6 +24,22 @@ export const checkIfUsersAreFriends = async (
   return friendship > 0;
 };
 
+export const checkIfFriendshipInvitationExists = async (
+  username1: string,
+  username2: string,
+): Promise<boolean> => {
+  const count = await prisma.friendshipInvitation.count({
+    where: {
+      OR: [
+        { senderUsername: username1, receiverUsername: username2 },
+        { senderUsername: username2, receiverUsername: username1 },
+      ],
+      status: 'SENT',
+    },
+  });
+  return count > 0;
+};
+
 export const sendFriendshipInvitation = async (
   senderUsername: string,
   receiverUsername: string,
@@ -38,6 +54,15 @@ export const sendFriendshipInvitation = async (
   );
   if (usersAreFriends)
     throw new Error(`You are already friend of ${receiverUsername}`);
+
+  const invitationExists = await checkIfFriendshipInvitationExists(
+    senderUsername,
+    receiverUsername,
+  );
+  if (invitationExists)
+    throw new Error(
+      `You have an open friendship invitation with ${receiverUsername}`,
+    );
 
   await prisma.friendshipInvitation.create({
     data: {

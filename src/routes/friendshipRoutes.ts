@@ -6,7 +6,6 @@ const router = Router();
 router.use(authenticateToken);
 
 router.post('/invitations/send', (req, res) => {
-  //   TODO: Add check for non duplicated invitations
   const senderUsername = req.body.verified_user.username;
   const receiverUsername = req.body.receiver_username;
   if (receiverUsername === null)
