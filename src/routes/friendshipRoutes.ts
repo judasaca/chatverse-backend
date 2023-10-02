@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authenticateToken from '../middlewares/securityMiddleware';
 import {
   acceptFriendshipInvitation,
+  rejectFriendshipInvitation,
   sendFriendshipInvitation,
 } from '../services/friendshipInvitationServices';
 
@@ -31,6 +32,14 @@ router.post('/invitations/accept/:invitationId', (req, res) => {
   const receiverUsername = req.body.verified_user.username;
   acceptFriendshipInvitation(receiverUsername, invitationId)
     .then(frienship => res.status(200).json(frienship))
+    .catch(e => res.status(400).json({ message: e.message }));
+});
+
+router.post('/invitations/reject/:invitationId', (req, res) => {
+  const invitationId = req.params.invitationId;
+  const receiverUsername = req.body.verified_user.username;
+  rejectFriendshipInvitation(receiverUsername, invitationId)
+    .then(() => res.sendStatus(200))
     .catch(e => res.status(400).json({ message: e.message }));
 });
 

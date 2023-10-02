@@ -87,3 +87,27 @@ export const acceptFriendshipInvitation = async (
   ]);
   return resultFriendship;
 };
+
+export const rejectFriendshipInvitation = async (
+  receiverUsername: string,
+  invitationId: string,
+): Promise<void> => {
+  try {
+    console.log('UPDATING FRIENDSHIP');
+    await prisma.friendshipInvitation.update({
+      where: {
+        id: invitationId,
+        status: 'SENT',
+        receiverUsername,
+      },
+      data: {
+        status: 'REJECTED',
+      },
+    });
+    console.log('FINISHED UPDATING');
+  } catch (error) {
+    throw new Error(
+      'Invitation not found. You must be authenticated as the receiver and the invitiation must not be previously accepted or rejected.',
+    );
+  }
+};
