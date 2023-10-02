@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import type { Friendship } from '@prisma/client';
+
 import { checkIfUserExists } from './userServices';
 import { checkIfUsersAreFriends } from './frienshipServices';
 
@@ -50,4 +52,38 @@ export const sendFriendshipInvitation = async (
       senderUsername,
     },
   });
+};
+
+export const acceptFriendshipInvitation = async (
+  receiverUsername: string,
+  invitationId: string,
+): Promise<Friendship> => {
+  const invitation = await prisma.friendshipInvitation.findUnique({
+    where: {
+      id: invitationId,
+      status: 'SENT',
+      receiverUsername,
+    },
+  });
+  if (invitation === null)
+    throw new Error(
+      'Invitation not found. You must be authenticated as the receiver and the invitiation must not be previously accepted or rejected.',
+    );
+  const [, resultFriendship] = await prisma.$transaction([
+    prisma.friendshipInvitation.update({
+      where: {
+        id: invitationId,
+      },
+      data: {
+        status: 'ACCEPTED',
+      },
+    }),
+    prisma.friendship.create({
+      data: {
+        userName1: invitation.senderUsername,
+        userName2: invitation.receiverUsername,
+      },
+    }),
+  ]);
+  return resultFriendship;
 };
