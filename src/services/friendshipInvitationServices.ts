@@ -111,3 +111,16 @@ export const rejectFriendshipInvitation = async (
     );
   }
 };
+
+export const cancelFriendshipInvitation = async (
+  senderUsername: string,
+  invitationId: string,
+): Promise<void> => {
+  await prisma.friendshipInvitation.delete({
+    where: {
+      senderUsername,
+      id: invitationId,
+      status: 'SENT',
+    },
+  });
+};
