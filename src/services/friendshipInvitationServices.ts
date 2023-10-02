@@ -3,6 +3,7 @@ import type { Friendship } from '@prisma/client';
 
 import { checkIfUserExists } from './userServices';
 import { checkIfUsersAreFriends } from './frienshipServices';
+import type { getAllOpenInvitationsResponse } from '../types/friendshipTypes';
 
 const prisma = new PrismaClient();
 
@@ -123,4 +124,25 @@ export const cancelFriendshipInvitation = async (
       status: 'SENT',
     },
   });
+};
+
+export const getAllOpenFriendshipInvitations = async (
+  username: string,
+): Promise<getAllOpenInvitationsResponse> => {
+  const invitationsReceived = await prisma.friendshipInvitation.findMany({
+    where: {
+      receiverUsername: username,
+      status: 'SENT',
+    },
+  });
+  const invitationsSent = await prisma.friendshipInvitation.findMany({
+    where: {
+      senderUsername: username,
+      status: 'SENT',
+    },
+  });
+  return {
+    invitationsReceived,
+    invitationsSent,
+  };
 };

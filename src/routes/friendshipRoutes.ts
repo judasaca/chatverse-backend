@@ -3,6 +3,7 @@ import authenticateToken from '../middlewares/securityMiddleware';
 import {
   acceptFriendshipInvitation,
   cancelFriendshipInvitation,
+  getAllOpenFriendshipInvitations,
   rejectFriendshipInvitation,
   sendFriendshipInvitation,
 } from '../services/friendshipInvitationServices';
@@ -61,6 +62,13 @@ router.post('/invitations/cancel/:invitationId', (req, res) => {
         .status(400)
         .json({ message: 'You are not allowed to cancel this invitation.' });
     });
+});
+
+router.get('/invitations/open', (req, res) => {
+  const currentUsername = req.body.verified_user.username;
+  getAllOpenFriendshipInvitations(currentUsername)
+    .then(r => res.status(200).json(r))
+    .catch(() => res.sendStatus(500));
 });
 
 export default router;

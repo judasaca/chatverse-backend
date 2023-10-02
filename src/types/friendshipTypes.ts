@@ -4,3 +4,8 @@ export type friendshipRequestInput = Pick<
   FriendshipInvitation,
   'receiverUsername' | 'senderUsername'
 >;
+
+export interface getAllOpenInvitationsResponse {
+  invitationsSent: FriendshipInvitation[];
+  invitationsReceived: FriendshipInvitation[];
+}
