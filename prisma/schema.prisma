@@ -77,9 +77,17 @@ model RoomMessage {
 }
 
 model FriendshipInvitation {
-  id               String @id @default(auto()) @map("_id") @db.ObjectId
+  id               String                     @id @default(auto()) @map("_id") @db.ObjectId
   senderUsername   String
-  sender           User   @relation(fields: [senderUsername], references: [username], name: "sendedInvitations")
+  sender           User                       @relation(fields: [senderUsername], references: [username], name: "sendedInvitations")
   receiverUsername String
-  receiver         User   @relation(fields: [receiverUsername], references: [username], name: "receivedInvitations")
+  receiver         User                       @relation(fields: [receiverUsername], references: [username], name: "receivedInvitations")
+  status           FriendshipInvitationStatus @default(SENT)
+  createdAt        DateTime                   @default(now())
+}
+
+enum FriendshipInvitationStatus {
+  SENT
+  ACCEPTED
+  REJECTED
 }

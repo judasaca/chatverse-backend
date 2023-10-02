@@ -1,11 +1,13 @@
 import express from 'express';
 import userRouter from './routes/userRoutes';
+import frienshipRoutes from './routes/friendshipRoutes';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import path from 'path';
 const app = express();
 app.use(express.json());
 app.use('/user', userRouter);
+app.use('/friendship', frienshipRoutes);
 
 const server = createServer(app);
 const io = new Server(server);

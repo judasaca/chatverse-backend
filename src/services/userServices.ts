@@ -48,3 +48,12 @@ export const authenticateUser = async (
     throw new Error('Wrong password');
   }
 };
+
+export const checkIfUserExists = async (username: string): Promise<boolean> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      username,
+    },
+  });
+  return !(user === null);
+};
