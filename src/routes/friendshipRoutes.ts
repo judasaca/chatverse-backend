@@ -7,6 +7,11 @@ import {
   rejectFriendshipInvitation,
   sendFriendshipInvitation,
 } from '../services/friendshipInvitationServices';
+import {
+  deleteFriend,
+  getAllCurrentFriends,
+  searchFriend,
+} from '../services/frienshipServices';
 
 const router = Router();
 router.use(authenticateToken);
@@ -68,6 +73,39 @@ router.get('/invitations/open', (req, res) => {
   const currentUsername = req.body.verified_user.username;
   getAllOpenFriendshipInvitations(currentUsername)
     .then(r => res.status(200).json(r))
+    .catch(() => res.sendStatus(500));
+});
+
+router.get('/friends/all', (req, res) => {
+  const currentUsername = req.body.verified_user.username;
+  getAllCurrentFriends(currentUsername)
+    .then(friends =>
+      res.status(200).json({
+        friends,
+      }),
+    )
+    .catch(() => res.sendStatus(500));
+});
+
+router.delete('/friends/delete/:friendUsername', (req, res) => {
+  const currentUsername = req.body.verified_user.username;
+  deleteFriend(currentUsername, req.params.friendUsername)
+    .then(() => res.sendStatus(200))
+    .catch(e =>
+      res.status(400).json({
+        message: e.message,
+      }),
+    );
+});
+
+router.get('/friends/search/:friendUsername', (req, res) => {
+  const currentUsername = req.body.verified_user.username;
+  searchFriend(currentUsername, req.params.friendUsername)
+    .then(f =>
+      res.status(200).json({
+        best_matches: f,
+      }),
+    )
     .catch(() => res.sendStatus(500));
 });
 
