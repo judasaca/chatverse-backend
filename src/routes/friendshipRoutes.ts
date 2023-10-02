@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import authenticateToken from '../middlewares/securityMiddleware';
-import { sendFriendshipInvitation } from '../services/frienshipServices';
+import { sendFriendshipInvitation } from '../services/friendshipInvitationServices';
 
 const router = Router();
 router.use(authenticateToken);
