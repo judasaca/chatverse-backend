@@ -77,17 +77,33 @@
         e.preventDefault();
         if (input.value) {
           socket.emit('chat message', input.value);
+          socket.emit('private message', {
+            content: input.value,
+            to: 'judasaca2',
+          });
           input.value = '';
         }
       });
       socket.onAny((event, ...args) => {
         console.log(event, args);
       });
+      socket.on('connect_error', err => {
+        console.log(err.message); // prints the message associated with the error
+      });
       socket.on('chat message', msg => {
         const item = document.createElement('li');
         item.textContent = msg;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
+      });
+      socket.on('users', msg => {
+        console.log('CURRENT USERS CONNECTED: ', msg);
+      });
+      socket.on('private message', ({ content, to }) => {
+        socket.to(to).emit('private message', {
+          content,
+          from: socket.id,
+        });
       });
     </script>
   </body>

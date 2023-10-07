@@ -60,6 +60,15 @@ io.use((socket, next) => {
 io.on('connection', socket => {
   console.log(socket.data);
   console.log(`${socket.data.user_name} has connected`);
+  const users = [];
+  for (const [id, socket] of io.of('/').sockets) {
+    users.push({
+      userID: id,
+      username: socket.data.user_name,
+    });
+  }
+  console.log('CURRENT CONNECTED USERS: ', users);
+  socket.emit('users', users);
   socket.on('disconnect', () => {
     console.log('user disconnected');
   });

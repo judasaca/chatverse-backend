@@ -83,11 +83,17 @@
       socket.onAny((event, ...args) => {
         console.log(event, args);
       });
+      socket.on('connect_error', err => {
+        console.log(err.message); // prints the message associated with the error
+      });
       socket.on('chat message', msg => {
         const item = document.createElement('li');
         item.textContent = msg;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
+      });
+      socket.on('users', msg => {
+        console.log('CURRENT USERS CONNECTED: ', msg);
       });
     </script>
   </body>
