@@ -63,7 +63,12 @@
     </form>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
-      const socket = io();
+      const socket = io({
+        auth: {
+          token:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp1ZGFzYWNhIiwiaWF0IjoxNjk2NzAxOTU0LCJleHAiOjE2OTY3MzE5NTR9.Tz0z94M_fh4tPmo29gEoc0vlyh1JD465R_UT2FkjT30',
+        },
+      });
 
       const form = document.getElementById('form');
       const input = document.getElementById('input');
