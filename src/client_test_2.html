@@ -63,7 +63,21 @@
     </form>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
-      const socket = io();
+      let token = localStorage.getItem('token');
+      if (token === null) {
+        localStorage.setItem(
+          'token',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp1ZGFzYWNhMiIsImlhdCI6MTY5NjgzMjc5MCwiZXhwIjoxNjk2ODYyNzkwfQ.tTnwadOYDM74gbIei8ZxchbvfmbMZWt2ct8GYtKv9XE',
+        );
+        token = localStorage.getItem('token');
+      }
+
+      const socket = io({
+        auth: {
+          token,
+          sessionID: token,
+        },
+      });
 
       const form = document.getElementById('form');
       const input = document.getElementById('input');
@@ -72,18 +86,40 @@
         e.preventDefault();
         if (input.value) {
           socket.emit('chat message', input.value);
+          socket.emit('private message', {
+            content: input.value,
+            to: 'judasaca',
+          });
           input.value = '';
         }
       });
       socket.onAny((event, ...args) => {
         console.log(event, args);
       });
-      socket.on('chat message', msg => {
+      socket.on('connect_error', err => {
+        console.log(err.message); // prints the message associated with the error
+      });
+      // socket.on('chat message', msg => {
+      //   const item = document.createElement('li');
+      //   item.textContent = msg;
+      //   messages.appendChild(item);
+      //   window.scrollTo(0, document.body.scrollHeight);
+      // });
+      socket.on('private message', msg => {
         const item = document.createElement('li');
         item.textContent = msg;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       });
+      socket.on('users', msg => {
+        console.log('CURRENT USERS CONNECTED: ', msg);
+      });
+      // socket.on('private message', ({ content, to }) => {
+      //   socket.to(to).emit('private message', {
+      //     content,
+      //     from: socket.id,
+      //   });
+      // });
     </script>
   </body>
 </html>
