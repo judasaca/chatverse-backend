@@ -57,3 +57,15 @@ export const checkIfUserExists = async (username: string): Promise<boolean> => {
   });
   return !(user === null);
 };
+
+export const getUserId = async (username: string): Promise<string> => {
+  const id = await prisma.user.findUnique({
+    where: {
+      username,
+    },
+    select: {
+      id: true,
+    },
+  });
+  return id === null ? '' : id.id;
+};

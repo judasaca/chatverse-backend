@@ -63,10 +63,19 @@
     </form>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
+      let token = localStorage.getItem('token');
+      if (token === null) {
+        localStorage.setItem(
+          'token',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp1ZGFzYWNhIiwiaWF0IjoxNjk2ODI2MDgyLCJleHAiOjE2OTY4NTYwODJ9.uGQQVEqvJAcuicuZ7bzJ-G9j76ESwi8fgUfP-DSg_W8',
+        );
+        token = localStorage.getItem('token');
+      }
+
       const socket = io({
         auth: {
-          token:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp1ZGFzYWNhIiwiaWF0IjoxNjk2NzAxOTU0LCJleHAiOjE2OTY3MzE5NTR9.Tz0z94M_fh4tPmo29gEoc0vlyh1JD465R_UT2FkjT30',
+          token,
+          sessionID: token,
         },
       });
 
@@ -90,20 +99,26 @@
       socket.on('connect_error', err => {
         console.log(err.message); // prints the message associated with the error
       });
-      socket.on('chat message', msg => {
+      // socket.on('chat message', msg => {
+      //   const item = document.createElement('li');
+      //   item.textContent = msg;
+      //   messages.appendChild(item);
+      //   window.scrollTo(0, document.body.scrollHeight);
+      // });
+      socket.on('users', msg => {
+        console.log('CURRENT USERS CONNECTED: ', msg);
+      });
+      // socket.on('private message', ({ content, to }) => {
+      //   socket.to(to).emit('private message', {
+      //     content,
+      //     from: socket.id,
+      //   });
+      // });
+      socket.on('private message', msg => {
         const item = document.createElement('li');
         item.textContent = msg;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
-      });
-      socket.on('users', msg => {
-        console.log('CURRENT USERS CONNECTED: ', msg);
-      });
-      socket.on('private message', ({ content, to }) => {
-        socket.to(to).emit('private message', {
-          content,
-          from: socket.id,
-        });
       });
     </script>
   </body>

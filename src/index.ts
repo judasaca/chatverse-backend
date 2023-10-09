@@ -5,7 +5,10 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import InMemorySessionStore from './sessionStore';
+import { getUserId } from './services/userServices';
 
+const sessionStore = new InMemorySessionStore();
 const app = express();
 app.use(express.json());
 app.use('/user', userRouter);
@@ -36,6 +39,8 @@ io.use((socket, next) => {
   if (token === null) {
     next(new Error('No credentials'));
   } else {
+    socket.data.sessionId = token;
+
     jwt.verify(
       token,
       process.env.TOKEN_SECRET as string,
@@ -53,13 +58,38 @@ io.use((socket, next) => {
   }
   // ...
 });
-// io.use((socket, next)=>{
+io.use((socket, next) => {
+  const sessionID = socket.data.sessionId;
+  if (sessionID !== '' && sessionID !== null) {
+    // find existing session
+    sessionStore
+      .findOrSaveSession(sessionID, socket.data.user_name)
+      .then(session => {
+        socket.data.userId = session.userId;
+        socket.data.username = session.username;
+        next();
+      })
+      .catch(e => {
+        next(new Error(e.message));
+      });
+  }
+});
 
-// })
-
-io.on('connection', socket => {
+io.on('connection', async socket => {
   console.log(socket.data);
-  console.log(`${socket.data.user_name} has connected`);
+  console.log(
+    `${socket.data.user_name} has connected, userid:` +
+      socket.id +
+      ' Session ID: ' +
+      socket.data.sessionId,
+  );
+  sessionStore.saveSession(socket.data.sessionId, {
+    userId: socket.data.userId,
+    username: socket.data.username,
+    connected: true,
+  });
+  await socket.join(socket.data.userId);
+  console.log('Joined to room: ', socket.data.userId);
   const users = [];
   for (const [id, socket] of io.of('/').sockets) {
     users.push({
@@ -75,6 +105,16 @@ io.on('connection', socket => {
   socket.on('chat message', msg => {
     io.emit('chat message', msg);
     console.log('message: ' + msg);
+  });
+
+  socket.on('private message', async ({ content, to }) => {
+    console.log('Sending message to ', to);
+    const receiverUserId = await getUserId(to);
+    socket.to(receiverUserId).to(socket.data.userId).emit('private message', {
+      content,
+      from: socket.data.user_name,
+      to,
+    });
   });
 });
 
