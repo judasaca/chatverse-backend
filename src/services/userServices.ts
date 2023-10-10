@@ -27,9 +27,14 @@ export const retrieveUser = async (email: string): Promise<User> => {
   return user;
 };
 
+interface authR {
+  token: string;
+  username: string;
+}
+
 export const authenticateUser = async (
   user: LoginUserInput,
-): Promise<string> => {
+): Promise<authR> => {
   const hashedInputPassword = generateHash(user.password);
   const requestedUser = await retrieveUser(user.email);
   if (requestedUser.password === hashedInputPassword) {
@@ -43,7 +48,7 @@ export const authenticateUser = async (
         expiresIn: process.env.TOKEN_LIFE_TIME,
       },
     );
-    return token;
+    return { token, username: requestedUser.username };
   } else {
     throw new Error('Wrong password');
   }

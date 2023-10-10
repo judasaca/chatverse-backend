@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticateUser, createUser } from '../services/userServices';
 import { toNewUser, toLoginUserInput } from '../utils/userUtils';
+import authenticateToken from '../middlewares/securityMiddleware';
 
 const router = express.Router();
 
@@ -21,13 +22,20 @@ router.post('/', (req, res) => {
     });
 });
 
+router.get('/info', authenticateToken, (req, res) => {
+  const username = req.body.verified_user.username;
+  console.log(username);
+  res.json({ username }).status(200);
+});
+
 router.post('/login', (req, res) => {
   const userInfo = toLoginUserInput(req.body);
   authenticateUser(userInfo)
     .then(token => {
       res.json({
         status: 'success',
-        token,
+        token: token.token,
+        username: token.username,
       });
     })
     .catch(error => {
