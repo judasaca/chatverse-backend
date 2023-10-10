@@ -22,7 +22,11 @@ app.use('/user', userRouter);
 app.use('/friendship', frienshipRoutes);
 
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  },
+});
 app.get('/', (_req, res) => {
   const options = {
     root: path.join(__dirname),
@@ -115,7 +119,7 @@ io.on('connection', async socket => {
   });
 
   socket.on('private message', async ({ content, to }) => {
-    console.log('Sending message to ', to);
+    console.log('Sending message from ', socket.data.user_name, ' to ', to);
     const receiverUserId = await getUserId(to);
     socket.to(receiverUserId).to(socket.data.userId).emit('private message', {
       content,
