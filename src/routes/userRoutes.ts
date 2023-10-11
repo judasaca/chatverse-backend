@@ -50,7 +50,7 @@ router.post('/login', (req, res) => {
     });
 });
 
-router.get('/search', authenticateToken, (req, res) => {
+router.post('/search', authenticateToken, (req, res) => {
   const searchUsername = req.body.username;
   const currentUsername = req.body.verified_user.username;
   searchUserByUsername(searchUsername, currentUsername)
