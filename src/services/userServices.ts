@@ -74,3 +74,25 @@ export const getUserId = async (username: string): Promise<string> => {
   });
   return id === null ? '' : id.id;
 };
+
+export const searchUserByUsername = async (
+  username: string,
+  currentUsername: string,
+): Promise<string[]> => {
+  const users = await prisma.user.findMany({
+    where: {
+      username: {
+        contains: username,
+        mode: 'insensitive',
+      },
+    },
+    select: {
+      username: true,
+    },
+  });
+  console.log(users);
+  const bestMatches = users
+    .map(u => u.username)
+    .filter(u => u !== currentUsername);
+  return bestMatches;
+};

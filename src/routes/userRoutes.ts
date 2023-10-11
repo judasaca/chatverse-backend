@@ -1,5 +1,9 @@
 import express from 'express';
-import { authenticateUser, createUser } from '../services/userServices';
+import {
+  authenticateUser,
+  createUser,
+  searchUserByUsername,
+} from '../services/userServices';
 import { toNewUser, toLoginUserInput } from '../utils/userUtils';
 import authenticateToken from '../middlewares/securityMiddleware';
 
@@ -44,6 +48,21 @@ router.post('/login', (req, res) => {
         status: 'failed',
         message: error.message,
       });
+    });
+});
+
+router.get('/search', authenticateToken, (req, res) => {
+  console.log('requestinnggg', req.body);
+  const searchUsername = req.body.username;
+  const currentUsername = req.body.verified_user.username;
+  searchUserByUsername(searchUsername, currentUsername)
+    .then(matches => {
+      res.status(200).json({
+        users: matches,
+      });
+    })
+    .catch(e => {
+      res.status(400).json({ message: e.message });
     });
 });
 
