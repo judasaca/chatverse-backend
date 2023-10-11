@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import authenticateToken from '../middlewares/securityMiddleware';
-import { createRoom } from '../services/roomsServices';
+import { createRoom, retrieveJoinedRooms } from '../services/roomsServices';
 
 const router = Router();
 router.use(authenticateToken);
@@ -20,4 +20,18 @@ router.post('/', (req, res) => {
     });
 });
 
+router.get('/joined', (req, res) => {
+  const username = req.body.verified_user.username;
+  retrieveJoinedRooms(username)
+    .then(rooms => {
+      res.status(200).json({
+        joined_rooms: rooms,
+      });
+    })
+    .catch(e => {
+      res.status(400).json({
+        message: e.message,
+      });
+    });
+});
 export default router;

@@ -19,3 +19,32 @@ export const createRoom = async (
   });
   return room;
 };
+
+export const retrieveNoJoinedRooms = async (
+  username: string,
+): Promise<Room[]> => {
+  const rooms = await prisma.room.findMany({
+    where: {
+      users: {
+        none: {
+          username,
+        },
+      },
+    },
+  });
+  return rooms;
+};
+export const retrieveJoinedRooms = async (
+  username: string,
+): Promise<Room[]> => {
+  console.log('REQUESING ', username);
+  const userId = await getUserId(username);
+  const rooms = await prisma.room.findMany({
+    where: {
+      usersIds: {
+        has: userId,
+      },
+    },
+  });
+  return rooms;
+};
