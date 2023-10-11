@@ -4,6 +4,7 @@ import {
   createRoom,
   retrieveJoinedRooms,
   retrieveNoJoinedRooms,
+  searchNoJoinedRooms,
 } from '../services/roomsServices';
 
 const router = Router();
@@ -52,4 +53,17 @@ router.get('/no-joined', (req, res) => {
       });
     });
 });
+
+router.post('/no-joined/search', (req, res) => {
+  const username = req.body.verified_user.username;
+  const roomName = req.body.room_name;
+  searchNoJoinedRooms(username, roomName)
+    .then(r => {
+      res.status(200).json({ rooms: r });
+    })
+    .catch(e => {
+      res.status(400).json({ message: e.message });
+    });
+});
+
 export default router;
