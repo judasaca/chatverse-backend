@@ -7,16 +7,11 @@ import path from 'path';
 import jwt from 'jsonwebtoken';
 import InMemorySessionStore from './sessionStore';
 import { getUserId } from './services/userServices';
+import cors from 'cors';
 
 const sessionStore = new InMemorySessionStore();
 const app = express();
-app.use(function (_, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', '*');
-  res.setHeader('Access-Control-Allow-Headers', '*');
-
-  next();
-});
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use('/user', userRouter);
 app.use('/friendship', frienshipRoutes);
