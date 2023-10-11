@@ -1,6 +1,7 @@
 import express from 'express';
 import userRouter from './routes/userRoutes';
 import frienshipRoutes from './routes/friendshipRoutes';
+import messageRoutes from './routes/messageRoutes';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import path from 'path';
@@ -15,6 +16,7 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use('/user', userRouter);
 app.use('/friendship', frienshipRoutes);
+app.use('/message', messageRoutes);
 
 const server = createServer(app);
 const io = new Server(server, {
