@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import { sendDirectMessage } from '../services/messageServices';
+import {
+  getLatestMessagesHome,
+  sendDirectMessage,
+} from '../services/messageServices';
 import authenticateToken from '../middlewares/securityMiddleware';
 
 const router = Router();
@@ -9,6 +12,17 @@ router.post('/direct', (req, res) => {
   const from = req.body.verified_user.username;
   sendDirectMessage(from, to, content)
     .then(() => res.status(200).json({ message: 'ok' }))
+    .catch(e => {
+      res.status(400).json({ message: e.message });
+    });
+});
+
+router.get('/direct/home', (req, res) => {
+  const username = req.body.verified_user.username;
+  getLatestMessagesHome(username)
+    .then(r => {
+      res.status(200).json({ items: r });
+    })
     .catch(e => {
       res.status(400).json({ message: e.message });
     });
