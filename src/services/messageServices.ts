@@ -51,3 +51,54 @@ export const getLatestMessagesHome = async (
   }
   return results;
 };
+
+export const retrieveLatestDirectMessages = async (
+  afterTimestamp: string | null,
+  username1: string,
+  username2: string,
+): Promise<DirectMessage[]> => {
+  let messages: DirectMessage[];
+  if (afterTimestamp === null) {
+    messages = await prisma.directMessage.findMany({
+      where: {
+        OR: [
+          {
+            senderUsername: username1,
+            receiverUsername: username2,
+          },
+          {
+            receiverUsername: username1,
+            senderUsername: username2,
+          },
+        ],
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 15,
+    });
+  } else {
+    messages = await prisma.directMessage.findMany({
+      where: {
+        createdAt: {
+          lt: afterTimestamp,
+        },
+        OR: [
+          {
+            senderUsername: username1,
+            receiverUsername: username2,
+          },
+          {
+            receiverUsername: username1,
+            senderUsername: username2,
+          },
+        ],
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 15,
+    });
+  }
+  return messages;
+};

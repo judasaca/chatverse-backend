@@ -28,7 +28,6 @@ router.post('/', (req, res) => {
 
 router.get('/info', authenticateToken, (req, res) => {
   const username = req.body.verified_user.username;
-  console.log(username);
   res.json({ username }).status(200);
 });
 
@@ -52,7 +51,6 @@ router.post('/login', (req, res) => {
 });
 
 router.get('/search', authenticateToken, (req, res) => {
-  console.log('requestinnggg', req.body);
   const searchUsername = req.body.username;
   const currentUsername = req.body.verified_user.username;
   searchUserByUsername(searchUsername, currentUsername)
