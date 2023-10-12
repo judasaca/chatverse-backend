@@ -34,31 +34,32 @@ router.post('/invitations/send', (req, res) => {
   }
 });
 
-router.post('/invitations/accept/:invitationId', (req, res) => {
-  const invitationId = req.params.invitationId;
+router.post('/invitations/accept', (req, res) => {
+  const senderUsername = req.body.username;
+
   const receiverUsername = req.body.verified_user.username;
-  acceptFriendshipInvitation(receiverUsername, invitationId)
+  acceptFriendshipInvitation(receiverUsername, senderUsername)
     .then(frienship => res.status(200).json(frienship))
     .catch(e => res.status(400).json({ message: e.message }));
 });
 
-router.post('/invitations/reject/:invitationId', (req, res) => {
-  const invitationId = req.params.invitationId;
+router.post('/invitations/reject', (req, res) => {
+  const senderUsername = req.body.username;
   const receiverUsername = req.body.verified_user.username;
-  rejectFriendshipInvitation(receiverUsername, invitationId)
+  rejectFriendshipInvitation(receiverUsername, senderUsername)
     .then(() => res.sendStatus(200))
     .catch(e => res.status(400).json({ message: e.message }));
 });
 
-router.post('/invitations/cancel/:invitationId', (req, res) => {
-  const invitationId = req.params.invitationId;
-  if (invitationId === null) {
+router.post('/invitations/cancel', (req, res) => {
+  const receiverUsername = req.body.username;
+  if (receiverUsername === null) {
     res.status(400).json({
-      message: 'you are not giving the invitation id',
+      message: 'you are not giving the receiver username',
     });
   }
   const senderUsername = req.body.verified_user.username;
-  cancelFriendshipInvitation(senderUsername, invitationId)
+  cancelFriendshipInvitation(senderUsername, receiverUsername)
     .then(() => {
       res.sendStatus(200);
     })

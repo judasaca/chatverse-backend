@@ -57,23 +57,24 @@ export const sendFriendshipInvitation = async (
 
 export const acceptFriendshipInvitation = async (
   receiverUsername: string,
-  invitationId: string,
+  senderUsername: string,
 ): Promise<Friendship> => {
-  const invitation = await prisma.friendshipInvitation.findUnique({
+  const invitation = await prisma.friendshipInvitation.findMany({
     where: {
-      id: invitationId,
       status: 'SENT',
       receiverUsername,
+      senderUsername,
     },
   });
-  if (invitation === null)
+  if (invitation.length === 0)
     throw new Error(
       'Invitation not found. You must be authenticated as the receiver and the invitiation must not be previously accepted or rejected.',
     );
   const [, resultFriendship] = await prisma.$transaction([
-    prisma.friendshipInvitation.update({
+    prisma.friendshipInvitation.updateMany({
       where: {
-        id: invitationId,
+        senderUsername,
+        receiverUsername,
       },
       data: {
         status: 'ACCEPTED',
@@ -81,8 +82,8 @@ export const acceptFriendshipInvitation = async (
     }),
     prisma.friendship.create({
       data: {
-        userName1: invitation.senderUsername,
-        userName2: invitation.receiverUsername,
+        userName1: senderUsername,
+        userName2: receiverUsername,
       },
     }),
   ]);
@@ -91,21 +92,20 @@ export const acceptFriendshipInvitation = async (
 
 export const rejectFriendshipInvitation = async (
   receiverUsername: string,
-  invitationId: string,
+  senderUsername: string,
 ): Promise<void> => {
   try {
     console.log('UPDATING FRIENDSHIP');
-    await prisma.friendshipInvitation.update({
+    await prisma.friendshipInvitation.updateMany({
       where: {
-        id: invitationId,
         status: 'SENT',
         receiverUsername,
+        senderUsername,
       },
       data: {
         status: 'REJECTED',
       },
     });
-    console.log('FINISHED UPDATING');
   } catch (error) {
     throw new Error(
       'Invitation not found. You must be authenticated as the receiver and the invitiation must not be previously accepted or rejected.',
@@ -115,12 +115,12 @@ export const rejectFriendshipInvitation = async (
 
 export const cancelFriendshipInvitation = async (
   senderUsername: string,
-  invitationId: string,
+  receiverUsername: string,
 ): Promise<void> => {
-  await prisma.friendshipInvitation.delete({
+  await prisma.friendshipInvitation.deleteMany({
     where: {
       senderUsername,
-      id: invitationId,
+      receiverUsername,
       status: 'SENT',
     },
   });
