@@ -78,15 +78,18 @@ export const deleteRoom = async (
   username: string,
 ): Promise<Room> => {
   try {
-    const result = await prisma.room.delete({
-      where: {
-        name: roomName,
-        admins: {
-          has: username,
+    const [, room] = await prisma.$transaction([
+      prisma.roomMessage.deleteMany({ where: { roomName } }),
+      prisma.room.delete({
+        where: {
+          name: roomName,
+          admins: {
+            has: username,
+          },
         },
-      },
-    });
-    return result;
+      }),
+    ]);
+    return room;
   } catch (error) {
     throw new Error('You are not allowed to remove the room');
   }
