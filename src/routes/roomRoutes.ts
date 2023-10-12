@@ -3,6 +3,7 @@ import authenticateToken from '../middlewares/securityMiddleware';
 import {
   createRoom,
   deleteRoom,
+  joinRoom,
   retrieveJoinedRooms,
   retrieveNoJoinedRooms,
   searchNoJoinedRooms,
@@ -79,4 +80,19 @@ router.delete('/', (req, res) => {
     .catch(e => res.status(400).json({ message: e.message }));
 });
 
+router.post('/join', (req, res) => {
+  const username = req.body.verified_user.username;
+  const roomName = req.body.room_name;
+  joinRoom(roomName, username)
+    .then(r => {
+      res.status(200).json({
+        joined_room: r,
+      });
+    })
+    .catch(e => {
+      res.status(400).json({
+        message: e.message,
+      });
+    });
+});
 export default router;

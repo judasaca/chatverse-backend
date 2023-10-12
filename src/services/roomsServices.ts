@@ -73,6 +73,22 @@ export const searchNoJoinedRooms = async (
   return rooms.map(r => r.name);
 };
 
+export const checkIfUserInRoom = async (
+  roomName: string,
+  username: string,
+): Promise<boolean> => {
+  const userId = await getUserId(username);
+  const count = await prisma.room.count({
+    where: {
+      name: roomName,
+      usersIds: {
+        has: userId,
+      },
+    },
+  });
+  return count > 0;
+};
+
 export const deleteRoom = async (
   roomName: string,
   username: string,
@@ -92,5 +108,27 @@ export const deleteRoom = async (
     return room;
   } catch (error) {
     throw new Error('You are not allowed to remove the room');
+  }
+};
+
+export const joinRoom = async (
+  roomName: string,
+  username: string,
+): Promise<Room> => {
+  const userExistsInRoom = await checkIfUserInRoom(roomName, username);
+  if (userExistsInRoom) throw new Error('User already exists in the room');
+  const userId = await getUserId(username);
+  try {
+    const result = await prisma.room.update({
+      where: { name: roomName },
+      data: {
+        usersIds: {
+          push: userId,
+        },
+      },
+    });
+    return result;
+  } catch {
+    throw new Error('You can not join that room');
   }
 };
