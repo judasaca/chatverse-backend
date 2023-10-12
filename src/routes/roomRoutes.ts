@@ -6,6 +6,7 @@ import {
   joinRoom,
   retrieveJoinedRooms,
   retrieveNoJoinedRooms,
+  retrieveRoomUsers,
   searchNoJoinedRooms,
 } from '../services/roomsServices';
 
@@ -87,6 +88,22 @@ router.post('/join', (req, res) => {
     .then(r => {
       res.status(200).json({
         joined_room: r,
+      });
+    })
+    .catch(e => {
+      res.status(400).json({
+        message: e.message,
+      });
+    });
+});
+
+router.get('/users', (req, res) => {
+  const roomName = req.query.room_name as string;
+  const username = req.body.verified_user.username;
+  retrieveRoomUsers(roomName, username)
+    .then(usernames => {
+      res.status(200).json({
+        usernames,
       });
     })
     .catch(e => {

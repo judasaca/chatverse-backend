@@ -17,6 +17,14 @@ export const createRoom = async (
       usersIds: [userId],
     },
   });
+  await prisma.user.update({
+    where: { username: createdBy },
+    data: {
+      roomsIds: {
+        push: room.id,
+      },
+    },
+  });
   return room;
 };
 
@@ -127,8 +135,56 @@ export const joinRoom = async (
         },
       },
     });
+    await prisma.user.update({
+      where: {
+        username,
+      },
+      data: {
+        roomsIds: {
+          push: result.id,
+        },
+      },
+    });
     return result;
   } catch {
     throw new Error('You can not join that room');
   }
+};
+
+export const getRoomId = async (
+  roomName: string,
+): Promise<string | undefined> => {
+  const room = await prisma.room.findUnique({
+    where: {
+      name: roomName,
+    },
+  });
+  return room?.id;
+};
+export const retrieveRoomUsers = async (
+  roomName: string,
+  username: string,
+): Promise<string[]> => {
+  const userExistsInRoom = await checkIfUserInRoom(roomName, username);
+  if (!userExistsInRoom)
+    throw new Error('You are not in this rooms. Join first.');
+
+  const roomId = await getRoomId(roomName);
+  console.log(
+    await prisma.user.findUnique({
+      where: {
+        username: 'judasaca2',
+      },
+    }),
+  );
+  const users = await prisma.user.findMany({
+    where: {
+      roomsIds: {
+        has: roomId,
+      },
+    },
+  });
+  console.log(roomName, roomId, username, users);
+  const usernames = users.map(u => u.username);
+  return usernames;
 };
