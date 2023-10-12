@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authenticateToken from '../middlewares/securityMiddleware';
 import {
   createRoom,
+  deleteRoom,
   retrieveJoinedRooms,
   retrieveNoJoinedRooms,
   searchNoJoinedRooms,
@@ -64,6 +65,18 @@ router.post('/no-joined/search', (req, res) => {
     .catch(e => {
       res.status(400).json({ message: e.message });
     });
+});
+
+router.delete('/', (req, res) => {
+  const username = req.body.verified_user.username;
+  const roomName = req.body.room_name;
+  deleteRoom(roomName, username)
+    .then(r =>
+      res.status(200).json({
+        deleted_room: r,
+      }),
+    )
+    .catch(e => res.status(400).json({ message: e.message }));
 });
 
 export default router;

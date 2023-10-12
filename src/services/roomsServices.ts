@@ -72,3 +72,22 @@ export const searchNoJoinedRooms = async (
   });
   return rooms.map(r => r.name);
 };
+
+export const deleteRoom = async (
+  roomName: string,
+  username: string,
+): Promise<Room> => {
+  try {
+    const result = await prisma.room.delete({
+      where: {
+        name: roomName,
+        admins: {
+          has: username,
+        },
+      },
+    });
+    return result;
+  } catch (error) {
+    throw new Error('You are not allowed to remove the room');
+  }
+};
