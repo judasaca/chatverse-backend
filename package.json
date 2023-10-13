@@ -9,7 +9,7 @@
     "eslint": "eslint",
     "dev": "ts-node-dev src/index.ts",
     "build": "tsc",
-    "start": "node index.ts",
+    "start": "node build/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
