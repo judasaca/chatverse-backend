@@ -2,14 +2,14 @@
   "name": "chatverse-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "tsc": "tsc",
     "prisma": "prisma",
     "eslint": "eslint",
     "dev": "ts-node-dev src/index.ts",
     "build": "tsc",
-    "start": "node index.js",
+    "start": "node index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
