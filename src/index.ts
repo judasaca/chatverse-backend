@@ -25,7 +25,7 @@ app.use('/room', roomRoutes);
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ['https://admin.socket.io', 'http://localhost:5173'],
+    origin: [process.env.FRONTEND_URL ?? '*'],
     credentials: true,
   },
 });
