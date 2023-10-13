@@ -32,6 +32,7 @@ router.get('/direct/home', (req, res) => {
 router.get('/direct/latest', (req, res) => {
   const username1 = req.body.verified_user.username;
   const username2 = req.query.username as string;
+
   if (username1 === username2) {
     res.status(400).json({
       message: 'You can not get messages from yourself',
@@ -46,6 +47,7 @@ router.get('/direct/latest', (req, res) => {
       });
     })
     .catch(e => {
+      console.log(e);
       res.status(400).json({ message: e.message });
     });
 });

@@ -80,11 +80,12 @@ router.get('/invitations/open', (req, res) => {
 router.get('/friends/all', (req, res) => {
   const currentUsername = req.body.verified_user.username;
   getAllCurrentFriends(currentUsername)
-    .then(friends =>
+    .then(friends => {
+      console.log('friends', friends);
       res.status(200).json({
         friends,
-      }),
-    )
+      });
+    })
     .catch(() => res.sendStatus(500));
 });
 

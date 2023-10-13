@@ -7,12 +7,14 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import path from 'path';
 import jwt from 'jsonwebtoken';
-import InMemorySessionStore from './sessionStore';
 import { getUserId } from './services/userServices';
 import cors from 'cors';
+import { checkIfUsersAreFriends } from './services/frienshipServices';
+import { PrismaClient } from '@prisma/client';
+import { instrument } from '@socket.io/admin-ui';
 
-const sessionStore = new InMemorySessionStore();
 const app = express();
+const prisma = new PrismaClient();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use('/user', userRouter);
@@ -23,9 +25,11 @@ app.use('/room', roomRoutes);
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: ['https://admin.socket.io', 'http://localhost:5173'],
+    credentials: true,
   },
 });
+
 app.get('/', (_req, res) => {
   const options = {
     root: path.join(__dirname),
@@ -47,10 +51,8 @@ app.get('/2', (_req, res) => {
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (token === null) {
-    next(new Error('No credentials'));
+    console.log('There is no token');
   } else {
-    socket.data.sessionId = token;
-
     jwt.verify(
       token,
       process.env.TOKEN_SECRET as string,
@@ -59,7 +61,7 @@ io.use((socket, next) => {
           next(new Error('Bad credentials'));
           console.log('SOCKET: BAD CREDENTIALS');
         } else {
-          socket.data.user_name = user.username;
+          socket.data.username = user.username;
           console.log('SOCKET: SUCCESSFUL AUTHENTICATION ');
           next();
         }
@@ -68,47 +70,50 @@ io.use((socket, next) => {
   }
   // ...
 });
-io.use((socket, next) => {
-  const sessionID = socket.data.sessionId;
-  if (sessionID !== '' && sessionID !== null) {
-    // find existing session
-    sessionStore
-      .findOrSaveSession(sessionID, socket.data.user_name)
-      .then(session => {
-        socket.data.userId = session.userId;
-        socket.data.username = session.username;
-        next();
-      })
-      .catch(e => {
-        next(new Error(e.message));
-      });
-  }
-});
+// io.use((socket, next) => {
+//   const token = socket.data.token;
+//   // find existing session
+//   jwt.verify(
+//     token,
+//     process.env.TOKEN_SECRET as string,
+//     (err: any, user: any) => {
+//       if (err != null) {
+//         const message = err.message;
+//         console.log('ERROR ON AUTHENTICATION, message: ', message);
+//       } else {
+//         socket.data.username = user.username;
+//         console.log(user.username, ' have been validated');
+//         next();
+//       }
+//     },
+//   );
+//   // sessionStore
+//   //   .findOrSaveSession(sessionID, socket.data.user_name)
+//   //   .then(session => {
+//   //     socket.data.userId = session.userId;
+//   //     socket.data.username = session.username;
+//   //     next();
+//   //   })
+//   //   .catch(e => {
+//   //     next(new Error(e.message));
+//   //   });
+// });
 
 io.on('connection', async socket => {
-  console.log(socket.data);
   console.log(
-    `${socket.data.user_name} has connected, userid:` +
-      socket.id +
-      ' Session ID: ' +
-      socket.data.sessionId,
+    `${socket.data.username} has connected, connection id:` + socket.id,
   );
-  sessionStore.saveSession(socket.data.sessionId, {
-    userId: socket.data.userId,
-    username: socket.data.username,
-    connected: true,
-  });
-  await socket.join(socket.data.userId);
-  console.log('Joined to room: ', socket.data.userId);
+  const userId = await getUserId(socket.data.username);
+  await socket.join(userId);
+  console.log('Joined to room: ', userId);
   const users = [];
   for (const [id, socket] of io.of('/').sockets) {
     users.push({
       userID: id,
-      username: socket.data.user_name,
+      username: socket.data.username,
     });
   }
   console.log('CURRENT CONNECTED USERS: ', users);
-  socket.emit('users', users);
   socket.on('disconnect', () => {
     console.log('user disconnected');
   });
@@ -118,16 +123,28 @@ io.on('connection', async socket => {
   });
 
   socket.on('private message', async ({ content, to }) => {
-    console.log('Sending message from ', socket.data.user_name, ' to ', to);
+    console.log('Sending message from ', socket.data.username, ' to ', to);
     const receiverUserId = await getUserId(to);
-    socket.to(receiverUserId).to(socket.data.userId).emit('private message', {
-      content,
-      from: socket.data.user_name,
-      to,
+    const areFriends = await checkIfUsersAreFriends(socket.data.username, to);
+    if (!areFriends) throw new Error('Users are not friends');
+    const insertedMessage = await prisma.directMessage.create({
+      data: {
+        senderUsername: socket.data.username,
+        receiverUsername: to,
+        message: content,
+      },
     });
+
+    socket
+      .to(receiverUserId)
+      .to(userId)
+      .emit('private message', insertedMessage);
   });
 });
-
+instrument(io, {
+  auth: false,
+  mode: 'development',
+});
 server.listen(3000, () => {
   console.log('server running at http://localhost:3000');
 });
