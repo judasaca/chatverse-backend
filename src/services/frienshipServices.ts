@@ -49,7 +49,7 @@ export const deleteFriend = async (
     where: {
       OR: [
         { userName1: username, userName2: friendUsername },
-        { userName1: friendUsername, userName2: friendUsername },
+        { userName1: friendUsername, userName2: username },
       ],
     },
   });
