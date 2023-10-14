@@ -15,7 +15,7 @@ import { instrument } from '@socket.io/admin-ui';
 
 const app = express();
 const prisma = new PrismaClient();
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: process.env.FRONTEND_URL ?? '*' }));
 app.use(express.json());
 app.use('/user', userRouter);
 app.use('/friendship', frienshipRoutes);
