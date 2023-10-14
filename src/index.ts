@@ -48,6 +48,7 @@ app.get('/2', (_req, res) => {
   };
   res.sendFile('./client_test_2.html', options);
 });
+
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (token === null) {
@@ -70,34 +71,6 @@ io.use((socket, next) => {
   }
   // ...
 });
-// io.use((socket, next) => {
-//   const token = socket.data.token;
-//   // find existing session
-//   jwt.verify(
-//     token,
-//     process.env.TOKEN_SECRET as string,
-//     (err: any, user: any) => {
-//       if (err != null) {
-//         const message = err.message;
-//         console.log('ERROR ON AUTHENTICATION, message: ', message);
-//       } else {
-//         socket.data.username = user.username;
-//         console.log(user.username, ' have been validated');
-//         next();
-//       }
-//     },
-//   );
-//   // sessionStore
-//   //   .findOrSaveSession(sessionID, socket.data.user_name)
-//   //   .then(session => {
-//   //     socket.data.userId = session.userId;
-//   //     socket.data.username = session.username;
-//   //     next();
-//   //   })
-//   //   .catch(e => {
-//   //     next(new Error(e.message));
-//   //   });
-// });
 
 io.on('connection', async socket => {
   console.log(
@@ -135,10 +108,8 @@ io.on('connection', async socket => {
       },
     });
 
-    socket
-      .to(receiverUserId)
-      .to(userId)
-      .emit('private message', insertedMessage);
+    socket.to(receiverUserId).emit('private message', insertedMessage);
+    io.to(userId).emit('private message', insertedMessage);
   });
 });
 instrument(io, {
